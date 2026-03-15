@@ -31,7 +31,7 @@ jobs:
 
         steps:
             -   name: Checkout repository
-                uses: actions/checkout@v4
+                uses: actions/checkout@v6
 
             -   name: Log in to Docker Hub
                 uses: docker/login-action@master
@@ -75,7 +75,7 @@ jobs:
 
         steps:
             -   name: Checkout repository
-                uses: actions/checkout@v4
+                uses: actions/checkout@v6
 
             -   name: Log in to Docker Hub
                 uses: docker/login-action@master
