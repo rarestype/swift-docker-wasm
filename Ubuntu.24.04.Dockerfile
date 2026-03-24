@@ -98,6 +98,7 @@ apt -y install \
     liblz4-dev \
     binaryen \
     gh \
+    git-filter-repo \
     jq \
     imagemagick
 
