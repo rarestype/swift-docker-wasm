@@ -96,7 +96,6 @@ apt -y install \
     libjemalloc2 \
     libjemalloc-dev \
     liblz4-dev \
-    libncurses-dev \
     libsqlite3-dev \
     libssl-dev \
     nodejs \
