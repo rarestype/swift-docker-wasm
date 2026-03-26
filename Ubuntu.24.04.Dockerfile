@@ -85,7 +85,7 @@ rm toolchain.tar.gz.sig
 rm swift.public.key
 
 # need to install a newer nodejs than is available by default
-echo "deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_22.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
+echo "deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_24.x nodistro main" > /etc/apt/sources.list.d/nodesource.list
 apt update
 apt -y install \
     binaryen \

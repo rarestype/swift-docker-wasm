@@ -15,7 +15,7 @@ USER ubuntu
 WORKDIR /home/ubuntu
 
 # https://github.com/actions/runner/releases
-ARG RUNNER_VERSION="2.331.0"
+ARG RUNNER_VERSION="2.333.0"
 # bring in the architecture argument (automatically set by Docker)
 ARG TARGETARCH
 
