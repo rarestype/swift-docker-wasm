@@ -4,8 +4,8 @@ SHELL ["/bin/bash", "-c"]
 
 ARG TARGETARCH
 ARG SWIFT_VERSION='6.3'
-ARG SWIFT_NIGHTLY='SNAPSHOT-2026-03-05-a'
-ARG SWIFT_WASM_SDK_CHECKSUM='7a0ff3bc30f077412d92be7bb46278e29caaba6095e19d55a1aaf24ccd15714f'
+ARG SWIFT_NIGHTLY=
+ARG SWIFT_WASM_SDK_CHECKSUM='9fa4016ee632c7e9e906608ec3b55cf13dfc4dff44e47574c5af58064dc33fd9'
 ARG UBUNTU_VERSION='ubuntu24.04'
 
 ENV SWIFT_INSTALLATION="/usr/local/swift"
@@ -38,11 +38,18 @@ fi
 
 # Note: The Docker CLI does not print the correct URL to the console, but the actual
 # interpolated string passed to `curl` is correct.
-SWIFT_TOOLCHAIN_URL="https://download.swift.org/\
-swift-${SWIFT_VERSION}-branch/\
+if [ -z "$SWIFT_NIGHTLY" ]; then
+    SWIFT_BRANCH="swift-${SWIFT_VERSION}-branch"
+    SWIFT_TOOLCHAIN="${SWIFT_VERSION}-DEVELOPMENT-${SWIFT_NIGHTLY}"
+    else
+    SWIFT_BRANCH="swift-${SWIFT_VERSION}-release"
+    SWIFT_TOOLCHAIN="${SWIFT_VERSION}-RELEASE"
+fi
+
+SWIFT_TOOLCHAIN_URL="https://download.swift.org/${SWIFT_BRANCH}/\
 ${UBUNTU_VERSION//[.]/}${SWIFT_PLATFORM_SUFFIX}/\
-swift-${SWIFT_VERSION}-DEVELOPMENT-${SWIFT_NIGHTLY}/\
-swift-${SWIFT_VERSION}-DEVELOPMENT-${SWIFT_NIGHTLY}-${UBUNTU_VERSION}${SWIFT_PLATFORM_SUFFIX}.tar.gz"
+swift-${SWIFT_TOOLCHAIN}/\
+swift-${SWIFT_TOOLCHAIN}-${UBUNTU_VERSION}${SWIFT_PLATFORM_SUFFIX}.tar.gz"
 
 echo "Downloading Swift toolchain from: $SWIFT_TOOLCHAIN_URL"
 curl -fsSL "$SWIFT_TOOLCHAIN_URL.sig" -o toolchain.tar.gz.sig
@@ -129,7 +136,7 @@ WORKDIR /home/ubuntu
 RUN passwd -d ubuntu
 RUN usermod -aG sudo ubuntu
 
-ENV SWIFT_WASM_SDK="${SWIFT_VERSION}-${SWIFT_NIGHTLY}-wasm32-unknown-wasip1-threads"
+ENV SWIFT_WASM_SDK="${SWIFT_TOOLCHAIN}-wasm32-unknown-wasip1-threads"
 ENV SWIFT_WASM_SDK_PATH='/usr/local/share/swift'
 
 RUN swift sdk install \
