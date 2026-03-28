@@ -38,7 +38,7 @@ fi
 
 # Note: The Docker CLI does not print the correct URL to the console, but the actual
 # interpolated string passed to `curl` is correct.
-if [ -v SWIFT_NIGHTLY ]; then
+if [[ -v SWIFT_NIGHTLY && -n "$SWIFT_NIGHTLY" ]]; then
     SWIFT_BRANCH="swift-${SWIFT_VERSION}-branch"
     SWIFT_TOOLCHAIN="${SWIFT_VERSION}-DEVELOPMENT-${SWIFT_NIGHTLY}"
 else
