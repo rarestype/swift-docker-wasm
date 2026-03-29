@@ -56,13 +56,15 @@ jobs:
                             --target "$target" \
                             --wasi-sysroot wasi-sysroot
 
-                        tar -czf "${target}.artifactbundle.zip" \
+                        tar -czf "${target}.artifactbundle.tar.gz" \
                             -C Bundles wasm.artifactbundle
+                        rm -rf Bundles
                     done
 
             -   name: 💝 Upload SDK artifacts 💝
                 uses: actions/upload-artifact@v7
                 with:
                     name: swift-wasm-sdk-bundle
-                    path: ./*.artifactbundle.zip
+                    path: ./*.artifactbundle.tar.gz
                     retention-days: 1
+                    compression-level: 0

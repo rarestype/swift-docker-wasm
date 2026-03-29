@@ -5,7 +5,6 @@ SHELL ["/bin/bash", "-c"]
 ARG TARGETARCH
 ARG SWIFT_VERSION='6.3'
 ARG SWIFT_NIGHTLY=
-ARG SWIFT_WASM_SDK_CHECKSUM='9fa4016ee632c7e9e906608ec3b55cf13dfc4dff44e47574c5af58064dc33fd9'
 ARG UBUNTU_VERSION='ubuntu24.04'
 
 ENV SWIFT_INSTALLATION="/usr/local/swift"
@@ -14,6 +13,7 @@ ENV PATH="$PATH:$SWIFT_INSTALLATION/usr/bin"
 COPY aws.public.key aws.public.key
 COPY swift.public.key swift.public.key
 COPY nodesource.public.gpg /usr/share/keyrings/nodesource.gpg
+COPY Bundles Bundles
 
 # Squash the following RUN commands into a single command to reduce image size
 RUN <<EOF
@@ -139,9 +139,7 @@ RUN usermod -aG sudo ubuntu
 ENV SWIFT_WASM_SDK="${SWIFT_TOOLCHAIN}-wasm32-unknown-wasip1-threads"
 ENV SWIFT_WASM_SDK_PATH='/usr/local/share/swift'
 
-RUN swift sdk install \
-    https://github.com/swiftwasm/swift/releases/download/swift-wasm-${SWIFT_VERSION}-${SWIFT_NIGHTLY}/swift-wasm-${SWIFT_VERSION}-${SWIFT_NIGHTLY}-wasm32-unknown-wasip1-threads.artifactbundle.zip \
-    --checksum ${SWIFT_WASM_SDK_CHECKSUM} \
+RUN swift sdk install Bundles/wasm32-unknown-wasip1-threads.tar.gz \
     --swift-sdks-path "$SWIFT_WASM_SDK_PATH"
 
 # Switch back to the standard user for default execution
