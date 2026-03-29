@@ -16,12 +16,6 @@ on:
                 required: true
                 type: string
 
-on:
-    push:
-        branches: [ master ]
-    pull_request:
-        branches: [ master ]
-
 jobs:
     WebAssembly:
         runs-on: ubuntu-24.04
