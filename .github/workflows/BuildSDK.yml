@@ -32,4 +32,4 @@ jobs:
             -   name: 💝 Build SDK 💝
                 run: Scripts/BuildSDK
                 env:
-                    WASI_SDK_VERSION=${{ inputs.wasi-sdk }}
+                    WASI_SDK_VERSION: ${{ inputs.wasi-sdk }}
