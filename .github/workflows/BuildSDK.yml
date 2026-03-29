@@ -56,7 +56,7 @@ jobs:
                             --target "$target" \
                             --wasi-sysroot wasi-sysroot
 
-                        tar -czf "${target}.artifactbundle" \
+                        tar -czf "${target}.artifactbundle.zip" \
                             -C Bundles wasm.artifactbundle
                     done
 
