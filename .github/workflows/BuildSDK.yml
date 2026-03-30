@@ -38,7 +38,7 @@ jobs:
                     SWIFT_TAG="${SWIFT_PREFIX##*/}"
 
                     SWIFT_SCHEME="${SWIFT_TAG#swift-}"
-                    SWIFT_SCHEME="${SWIFT_SCHEME%-RELEASE}
+                    SWIFT_SCHEME="${SWIFT_SCHEME%-RELEASE}"
 
                     echo "checking out tag: ${SWIFT_TAG} with scheme release/${SWIFT_SCHEME}"
 
