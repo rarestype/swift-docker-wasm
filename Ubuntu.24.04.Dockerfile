@@ -1,5 +1,5 @@
 FROM ubuntu:24.04
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
 
 ARG TARGETARCH
@@ -139,10 +139,10 @@ RUN usermod -aG sudo ubuntu
 ENV SWIFT_WASM_SDK="${SWIFT_TOOLCHAIN}-wasm32-unknown-wasip1-threads"
 ENV SWIFT_WASM_SDK_PATH='/usr/local/share/swift'
 
-RUN swift sdk install Bundles/wasm32-unknown-wasip1-threads.tar.gz \
+RUN swift sdk install /Bundles/wasm32-unknown-wasip1-threads.artifactbundle.tar.gz \
     --swift-sdks-path "$SWIFT_WASM_SDK_PATH"
 
 # Switch back to the standard user for default execution
 USER ubuntu
-ENV HOME /home/ubuntu
+ENV HOME=/home/ubuntu
 CMD ["sleep", "infinity"]
