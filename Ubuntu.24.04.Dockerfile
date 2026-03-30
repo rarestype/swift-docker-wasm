@@ -13,8 +13,8 @@ ARG UBUNTU_VERSION='ubuntu24.04'
 ENV SWIFT_VERSION="${SWIFT_RELEASE}-${SWIFT_NIGHTLY:-RELEASE}"
 ENV SWIFT_WASM_SDK="${SWIFT_VERSION}-${SWIFT_WASM_TRIPLE}"
 ENV SWIFT_WASM_SDK_PATH='/usr/local/share/swift'
-ENV SWIFT_INSTALLATION="/usr/local/swift"
-ENV PATH="$PATH:$SWIFT_INSTALLATION/usr/bin"
+ENV SWIFT_INSTALLATION="/usr/local/swift/usr"
+ENV PATH="$PATH:$SWIFT_INSTALLATION/bin"
 
 COPY PublicKeys/aws.public.key aws.public.key
 COPY PublicKeys/swift.public.key swift.public.key
@@ -90,10 +90,11 @@ apt -y install \
     ca-certificates
 
 # Unpack the Swift toolchain to /usr/local/swift
-mkdir -p "$SWIFT_INSTALLATION"
+SWIFT_INSTALLATION_DIRECTORY="${SWIFT_INSTALLATION%/*}"
+mkdir -p "$SWIFT_INSTALLATION_DIRECTORY"
 gpg --import swift.public.key
 gpg --verify toolchain.tar.gz.sig toolchain.tar.gz
-tar --strip-components=1 -xf toolchain.tar.gz -C "$SWIFT_INSTALLATION"
+tar --strip-components=1 -xf toolchain.tar.gz -C "$SWIFT_INSTALLATION_DIRECTORY"
 rm toolchain.tar.gz
 rm toolchain.tar.gz.sig
 rm swift.public.key
@@ -139,8 +140,8 @@ rm -rf aws awscliv2.zip awscliv2.zip.sig aws-public.key
 rm -rf /var/lib/apt/lists/*
 
 # verify installations
-node -v
-aws --version
+echo "NodeJS: $(node --version)"
+echo "AWS CLI: $(aws --version)"
 swift --version
 swift sdk list --swift-sdks-path "$SWIFT_WASM_SDK_PATH"
 
