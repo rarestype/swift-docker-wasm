@@ -52,8 +52,7 @@ curl -fsSL "${SWIFT_WASM_URL}" -o swift-wasm.artifactbundle.zip
 # x86_64 is implicit in the Swift platform naming scheme
 SWIFT_PLATFORM="${UBUNTU_VERSION}-${ARCHITECTURE}"
 SWIFT_PLATFORM="${SWIFT_PLATFORM%-x86_64}"
-SWIFT_TOOLCHAIN_URL="https://download.swift.org/${SWIFT_BRANCH}/\
-${SWIFT_TOOLCHAIN_PLATFORM//[.]/}/\
+SWIFT_TOOLCHAIN_URL="https://download.swift.org/${SWIFT_BRANCH}/${SWIFT_PLATFORM//[.]/}/\
 swift-${SWIFT_TOOLCHAIN}/\
 swift-${SWIFT_TOOLCHAIN}-${SWIFT_PLATFORM}.tar.gz"
 
