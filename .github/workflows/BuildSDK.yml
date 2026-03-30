@@ -58,6 +58,11 @@ jobs:
                         --skip-build-llvm \
                         --skip-build-swift \
                         --skip-build-cmark \
+                        --skip-test-swift \
+                        --skip-test-cmark \
+                        --skip-test-llvm \
+                        --skip-test-foundation \
+                        --skip-test-wasm-stdlib \
                         --build-wasm-stdlib \
                         --build-stdlib-deployment-targets "wasi-wasm32" \
                         --stdlib-deployment-targets "wasi-wasm32" \
