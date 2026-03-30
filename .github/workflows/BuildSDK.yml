@@ -59,8 +59,8 @@ jobs:
                         --skip-build-swift \
                         --skip-build-cmark \
                         --build-wasm-stdlib \
-                        --build-stdlib-deployment-targets "wasi-wasm32 wasi-wasm32-threads"
-                        --stdlib-deployment-targets "wasi-wasm32 wasi-wasm32-threads"
+                        --build-stdlib-deployment-targets "wasi-wasm32 wasi-wasm32-threads" \
+                        --stdlib-deployment-targets "wasi-wasm32 wasi-wasm32-threads" \
                         --native-swift-tools-path="$SWIFT_PATH" \
                         --native-clang-tools-path="$SWIFT_PATH" \
                         --native-llvm-tools-path="$SWIFT_PATH"
