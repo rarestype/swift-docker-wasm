@@ -16,9 +16,9 @@ ENV SWIFT_WASM_SDK_PATH='/usr/local/share/swift'
 ENV SWIFT_INSTALLATION="/usr/local/swift"
 ENV PATH="$PATH:$SWIFT_INSTALLATION/usr/bin"
 
-COPY aws.public.key aws.public.key
-COPY swift.public.key swift.public.key
-COPY nodesource.public.gpg /usr/share/keyrings/nodesource.gpg
+COPY PublicKeys/aws.public.key aws.public.key
+COPY PublicKeys/swift.public.key swift.public.key
+COPY PublicKeys/nodesource.public.gpg /usr/share/keyrings/nodesource.gpg
 
 # Squash the following RUN commands into a single command to reduce image size
 RUN <<EOF
