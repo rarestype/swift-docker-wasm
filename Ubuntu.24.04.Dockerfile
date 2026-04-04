@@ -12,9 +12,13 @@ ARG UBUNTU_VERSION='ubuntu24.04'
 # these variables exported to the container
 ENV SWIFT_VERSION="${SWIFT_RELEASE}-${SWIFT_NIGHTLY:-RELEASE}"
 ENV SWIFT_WASM_SDK="${SWIFT_VERSION}-${SWIFT_WASM_TRIPLE}"
-ENV SWIFT_WASM_SDK_PATH='/usr/local/share/swift'
-ENV SWIFT_INSTALLATION="/usr/local/swift/usr"
-ENV PATH="$PATH:$SWIFT_INSTALLATION/bin"
+ENV SWIFT_WASM_SDK_PATH='/opt/swift/sdks'
+ENV SWIFT_INSTALLATION="/opt/swift/usr"
+ENV PATH="${PATH:+${PATH}:}:${SWIFT_INSTALLATION}/bin"
+# expose Swift's C++ and Block headers for libraries like IndexStoreDB
+ENV CPLUS_INCLUDE_PATH="${CPLUS_INCLUDE_PATH:+${CPLUS_INCLUDE_PATH}:}\
+${SWIFT_INSTALLATION}/lib/swift:\
+${SWIFT_INSTALLATION}/lib/swift/Block"
 
 COPY PublicKeys/aws.public.key aws.public.key
 COPY PublicKeys/swift.public.key swift.public.key
