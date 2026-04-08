@@ -20,6 +20,13 @@ ENV CPLUS_INCLUDE_PATH="${CPLUS_INCLUDE_PATH:+${CPLUS_INCLUDE_PATH}:}\
 ${SWIFT_INSTALLATION}/lib/swift:\
 ${SWIFT_INSTALLATION}/lib/swift/Block"
 
+# actually make pip usable in the container
+# to compensate safety-wise, force pip to always use --user mode
+ENV PIP_BREAK_SYSTEM_PACKAGES=1
+ENV PIP_USER=true
+# ensure the bin folder that pip is now using is on the PATH
+ENV PATH="/home/ubuntu/.local/bin${PATH:+:${PATH}}"
+
 COPY PublicKeys/aws.public.key aws.public.key
 COPY PublicKeys/swift.public.key swift.public.key
 COPY PublicKeys/nodesource.public.gpg /usr/share/keyrings/nodesource.gpg
@@ -123,6 +130,7 @@ apt -y install \
     libssl-dev \
     nodejs \
     passwd \
+    pip \
     sudo \
     xxd
 
