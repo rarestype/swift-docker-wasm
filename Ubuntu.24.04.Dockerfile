@@ -132,6 +132,7 @@ apt -y install \
     passwd \
     pip \
     sudo \
+    wabt \
     xxd
 
 # AWS uses 'aarch64' and 'x86_64'
