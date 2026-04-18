@@ -4,7 +4,7 @@ SHELL ["/bin/bash", "-c"]
 
 ARG TARGETARCH
 ARG SWIFT_WASM_TRIPLE='wasm32-unknown-wasip1-threads'
-ARG SWIFT_RELEASE='6.3'
+ARG SWIFT_RELEASE='6.3.1'
 ARG SWIFT_NIGHTLY=
 ARG UBUNTU_VERSION='ubuntu24.04'
 
@@ -55,9 +55,8 @@ apt update
 apt -y install curl
 
 
-SWIFT_WASM_URL="https://github.com/swiftwasm/swift/releases/download/\
-swift-wasm-${SWIFT_VERSION}/\
-swift-wasm-${SWIFT_WASM_SDK}.artifactbundle.zip"
+SWIFT_WASM_URL="https://github.com/rarestype/swift-sdk-wasm/releases/download/\
+swift-${SWIFT_VERSION}/${SWIFT_WASM_SDK}.artifactbundle.zip"
 
 echo "Downloading Swift WebAssembly SDK from: ${SWIFT_WASM_URL}"
 curl -fsSL "${SWIFT_WASM_URL}" -o swift-wasm.artifactbundle.zip
