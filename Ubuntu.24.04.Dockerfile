@@ -132,7 +132,8 @@ apt -y install \
     pip \
     sudo \
     wabt \
-    xxd
+    xxd \
+    zip
 
 # AWS uses 'aarch64' and 'x86_64'
 curl "https://awscli.amazonaws.com/awscli-exe-linux-${ARCHITECTURE}.zip" \
