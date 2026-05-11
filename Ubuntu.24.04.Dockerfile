@@ -61,6 +61,9 @@ swift-${SWIFT_VERSION}/${SWIFT_WASM_SDK}.artifactbundle.zip"
 echo "Downloading Swift WebAssembly SDK from: ${SWIFT_WASM_URL}"
 curl -fsSL "${SWIFT_WASM_URL}" -o swift-wasm.artifactbundle.zip
 
+# install wasmtime
+curl https://wasmtime.dev/install.sh -sSf | bash
+
 # x86_64 is implicit in the Swift platform naming scheme
 SWIFT_PLATFORM="${UBUNTU_VERSION}-${ARCHITECTURE}"
 SWIFT_PLATFORM="${SWIFT_PLATFORM%-x86_64}"
