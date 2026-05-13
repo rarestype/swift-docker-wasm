@@ -3,6 +3,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
 
 ARG TARGETARCH
+ARG WASMTIME_VERSION="v44.0.1"
 ARG SWIFT_WASM_TRIPLE='wasm32-unknown-wasip1-threads'
 ARG SWIFT_RELEASE='6.3.1'
 ARG SWIFT_NIGHTLY=
@@ -62,7 +63,14 @@ echo "Downloading Swift WebAssembly SDK from: ${SWIFT_WASM_URL}"
 curl -fsSL "${SWIFT_WASM_URL}" -o swift-wasm.artifactbundle.zip
 
 # install wasmtime
-curl https://wasmtime.dev/install.sh -sSf | bash
+WASMTIME_URL="https://github.com/bytecodealliance/wasmtime/releases/download/\
+${WASMTIME_VERSION}/wasmtime-${WASMTIME_VERSION}-${ARCHITECTURE}-linux.tar.xz"
+
+echo "Downloading Wasmtime from: ${WASMTIME_URL}"
+curl -fsSL "${WASMTIME_URL}" -o wasmtime.tar.xz
+tar -xf wasmtime.tar.xz
+mv "wasmtime-${WASMTIME_VERSION}-${ARCHITECTURE}-linux/wasmtime" /usr/local/bin/
+rm -rf wasmtime.tar.xz "wasmtime-${WASMTIME_VERSION}-${ARCHITECTURE}-linux"
 
 # x86_64 is implicit in the Swift platform naming scheme
 SWIFT_PLATFORM="${UBUNTU_VERSION}-${ARCHITECTURE}"
