@@ -52,7 +52,7 @@ fi
 
 
 apt update
-apt -y install curl
+apt -y install curl xz-utils
 
 
 SWIFT_WASM_URL="https://github.com/rarestype/swift-sdk-wasm/releases/download/\
