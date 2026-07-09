@@ -143,6 +143,7 @@ apt -y install \
     pip \
     sudo \
     wabt \
+    wget \
     xxd \
     zip
 
