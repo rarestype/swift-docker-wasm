@@ -486,6 +486,141 @@ def cmd_branch(args):
     print(f"Error: Czar '{args.target}' not found.", file=sys.stderr)
     sys.exit(1)
 
+def _confirm_and_delete(args, desc, conv_ids, delete_fn, data):
+    count_str = f" ({len(conv_ids)} conversation{'s' if len(conv_ids) != 1 else ''})" if conv_ids else ""
+    purge_str = " AND purge conversation database files from disk" if args.purge else ""
+
+    if not args.force:
+        if not sys.stdin.isatty():
+            print(f"Error: Deleting {desc} in non-interactive mode requires -f / --force.", file=sys.stderr)
+            sys.exit(1)
+        try:
+            resp = input(f"Are you sure you want to delete {desc}{count_str}{purge_str}? [y/N]: ")
+        except (KeyboardInterrupt, EOFError):
+            print("\nAborted.")
+            sys.exit(1)
+        if resp.strip().lower() not in ["y", "yes"]:
+            print("Aborted.")
+            return
+
+    delete_fn()
+    save_registry(data)
+    print(c(f"✓ Removed {desc} from team registry.", GREEN))
+
+    if args.purge and conv_ids:
+        # 1. Purge from SQLite
+        db_path = get_db_path()
+        if os.path.exists(db_path):
+            try:
+                conn = sqlite3.connect(db_path)
+                cur = conn.cursor()
+                placeholders = ",".join("?" for _ in conv_ids)
+                cur.execute(f"DELETE FROM conversation_summaries WHERE conversation_id IN ({placeholders});", tuple(conv_ids))
+                conn.commit()
+                cur.execute("PRAGMA wal_checkpoint(TRUNCATE);")
+                conn.close()
+            except Exception as e:
+                print(f"Warning: Failed to purge from SQLite summaries: {e}", file=sys.stderr)
+
+        # 2. Purge from disk
+        purged_files = 0
+        for cid in conv_ids:
+            for ext in [".db", ".pb", ".db-shm", ".db-wal"]:
+                fpath = f"/swift/conversations/{cid}{ext}"
+                if os.path.exists(fpath):
+                    try:
+                        os.remove(fpath)
+                        purged_files += 1
+                    except OSError:
+                        pass
+        print(c(f"✓ Purged {purged_files} conversation files for {len(conv_ids)} timeline(s) from disk.", GREEN))
+
+def cmd_delete(args):
+    data = load_registry()
+    parts = [x for x in args.target.split("/") if x]
+    teams = data.get("teams", {})
+
+    conv_ids = []
+
+    # Case 1: Single token (Team name or unique Czar)
+    if len(parts) == 1:
+        name = parts[0]
+        if name in teams:
+            team = teams[name]
+            desc = f"Team '{name}'"
+            if "architect" in team and "id" in team["architect"]:
+                conv_ids.append(team["architect"]["id"])
+            for czar in team.get("czars", {}).values():
+                if "id" in czar:
+                    conv_ids.append(czar["id"])
+                for worker in czar.get("workers", {}).values():
+                    if "id" in worker:
+                        conv_ids.append(worker["id"])
+
+            _confirm_and_delete(args, desc, conv_ids, lambda: teams.pop(name), data)
+            return
+
+        c_matches = []
+        for t_name, team in teams.items():
+            if name in team.get("czars", {}):
+                c_matches.append((t_name, name))
+        if len(c_matches) == 1:
+            t_name, c_name = c_matches[0]
+            czar = teams[t_name]["czars"][c_name]
+            desc = f"Czar '{t_name}/{c_name}'"
+            if "id" in czar:
+                conv_ids.append(czar["id"])
+            for worker in czar.get("workers", {}).values():
+                if "id" in worker:
+                    conv_ids.append(worker["id"])
+
+            _confirm_and_delete(args, desc, conv_ids, lambda: teams[t_name]["czars"].pop(c_name), data)
+            return
+        elif len(c_matches) > 1:
+            print(f"Error: Ambiguous Czar '{name}'. Specify <team>/<czar>.", file=sys.stderr)
+            sys.exit(1)
+
+    # Case 2: team/czar or czar/worker
+    if len(parts) == 2:
+        t_name, c_name = parts[0], parts[1]
+        if t_name in teams and c_name in teams[t_name].get("czars", {}):
+            czar = teams[t_name]["czars"][c_name]
+            desc = f"Czar '{t_name}/{c_name}'"
+            if "id" in czar:
+                conv_ids.append(czar["id"])
+            for worker in czar.get("workers", {}).values():
+                if "id" in worker:
+                    conv_ids.append(worker["id"])
+
+            _confirm_and_delete(args, desc, conv_ids, lambda: teams[t_name]["czars"].pop(c_name), data)
+            return
+
+        for team_key, team in teams.items():
+            if t_name in team.get("czars", {}):
+                czar = team["czars"][t_name]
+                if c_name in czar.get("workers", {}):
+                    worker = czar["workers"][c_name]
+                    desc = f"Worker '{team_key}/{t_name}/{c_name}'"
+                    if "id" in worker:
+                        conv_ids.append(worker["id"])
+                    _confirm_and_delete(args, desc, conv_ids, lambda: czar["workers"].pop(c_name), data)
+                    return
+
+    # Case 3: team/czar/worker
+    if len(parts) == 3:
+        t_name, c_name, w_name = parts[0], parts[1], parts[2]
+        czar = teams.get(t_name, {}).get("czars", {}).get(c_name, {})
+        if w_name in czar.get("workers", {}):
+            worker = czar["workers"][w_name]
+            desc = f"Worker '{t_name}/{c_name}/{w_name}'"
+            if "id" in worker:
+                conv_ids.append(worker["id"])
+            _confirm_and_delete(args, desc, conv_ids, lambda: czar["workers"].pop(w_name), data)
+            return
+
+    print(f"Error: Target '{args.target}' not found.", file=sys.stderr)
+    sys.exit(1)
+
 def main():
     if len(sys.argv) == 1:
         render_tree(load_registry())
@@ -555,6 +690,15 @@ def main():
         cmd_branch(args)
         return
 
+    if first_arg in ["delete", "rm", "remove"]:
+        parser = argparse.ArgumentParser(prog="team delete", description="Delete a Team, Czar, or Worker")
+        parser.add_argument("target", help="Path to node (e.g. 'style-audit', 'y2k/etf-trading', 'monetary-base/stylist')")
+        parser.add_argument("-f", "--force", action="store_true", help="Do not prompt for confirmation")
+        parser.add_argument("--purge", action="store_true", help="Also purge underlying conversation database files from disk")
+        args = parser.parse_args(sys.argv[2:])
+        cmd_delete(args)
+        return
+
     if first_arg in ["help", "-h", "--help"]:
         print(c("Antigravity Team Hierarchy Manager (`team`)", BOLD))
         print("\n" + c("Usage:", BOLD))
@@ -568,6 +712,7 @@ def main():
         print("  team branch <czar> <branch>           Associate a git branch with a Czar")
         print("  team done <path>                      Mark a Czar or Worker as completed")
         print("  team reopen <path>                    Reopen an archived Czar or Worker")
+        print("  team delete <path> [-f] [--purge]     Delete a Team, Czar, or Worker (--purge removes DB files)")
         print("  team new-team <name> [title]          Create a new Team with a Master Architect")
         return
 
