@@ -180,11 +180,14 @@ RUN usermod -aG sudo ubuntu
 # Install Antigravity CLI system-wide
 RUN curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir /usr/local/bin
 
+COPY --chmod=755 Scripts/team /usr/local/bin/team
+
 # Switch back to the standard user for default execution
 USER ubuntu
 ENV HOME=/home/ubuntu
 
-RUN mkdir -p /home/ubuntu/.gemini/antigravity-cli
+RUN mkdir -p /home/ubuntu/.gemini/antigravity-cli/conversations && \
+    ln -sf /home/ubuntu/.gemini/antigravity-cli/conversations/conversation_summaries.db /home/ubuntu/.gemini/antigravity-cli/conversation_summaries.db
 COPY --chown=ubuntu:ubuntu Config/antigravity-cli/settings.json /home/ubuntu/.gemini/antigravity-cli/settings.json
 
 CMD ["sleep", "infinity"]
