@@ -1,0 +1,53 @@
+{
+    "allowNonWorkspaceAccess": true,
+    "permissions": {
+        "allow": [
+            "command(awk)",
+            "command(cat)",
+            "command(cd)",
+            "command(chmod)",
+            "command(cp)",
+            "command(cut)",
+            "command(diff)",
+            "command(echo)",
+            "command(find)",
+            "command(grep)",
+            "command(head)",
+            "command(ls)",
+            "command(mkdir)",
+            "command(mv)",
+            "command(rm)",
+            "command(sed)",
+            "command(sleep)",
+            "command(sort)",
+            "command(tail)",
+            "command(touch)",
+            "command(tr)",
+            "command(uniq)",
+            "command(wc)",
+            "command(which)",
+            "command(jq)",
+            "command(tar)",
+            "command(unzip)",
+            "command(git)",
+            "command(swift)",
+            "command(python3)",
+            "command(node)",
+            "command(npm)",
+            "command(npx)",
+            "command(wasmtime)",
+            "command(curl)",
+            "read_url(raw.githubusercontent.com)",
+            "read_url(github.com)",
+            "command(./Scripts/)",
+            "command(Scripts/)",
+            "command(./.github/tools/)",
+            "command(.github/tools/)"
+        ]
+    },
+    "statusLine": {
+        "type": "",
+        "command": "",
+        "enabled": true
+    }
+}

@@ -177,7 +177,14 @@ WORKDIR /home/ubuntu
 RUN passwd -d ubuntu
 RUN usermod -aG sudo ubuntu
 
+# Install Antigravity CLI system-wide
+RUN curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir /usr/local/bin
+
 # Switch back to the standard user for default execution
 USER ubuntu
 ENV HOME=/home/ubuntu
+
+RUN mkdir -p /home/ubuntu/.gemini/antigravity-cli
+COPY --chown=ubuntu:ubuntu Config/antigravity-cli/settings.json /home/ubuntu/.gemini/antigravity-cli/settings.json
+
 CMD ["sleep", "infinity"]
