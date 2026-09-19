@@ -42,7 +42,13 @@
             "command(./Scripts/)",
             "command(Scripts/)",
             "command(./.github/tools/)",
-            "command(.github/tools/)"
+            "command(.github/tools/)",
+            "command(./Scripts/*)",
+            "command(Scripts/*)",
+            "command(./.github/tools/*)",
+            "command(.github/tools/*)",
+            "command(regex:(\\./)?Scripts/.*)",
+            "command(regex:(\\./)?\\.github/tools/.*)"
         ]
     },
     "statusLine": {

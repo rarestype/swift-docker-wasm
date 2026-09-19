@@ -5,7 +5,7 @@ SHELL ["/bin/bash", "-c"]
 ARG TARGETARCH
 ARG WASMTIME_VERSION="v44.0.1"
 ARG SWIFT_WASM_TRIPLE='wasm32-unknown-wasip1-threads'
-ARG SWIFT_RELEASE='6.3.3'
+ARG SWIFT_RELEASE='6.4.0'
 ARG SWIFT_NIGHTLY=
 ARG UBUNTU_VERSION='ubuntu24.04'
 
@@ -180,11 +180,15 @@ RUN usermod -aG sudo ubuntu
 # Install Antigravity CLI system-wide
 RUN curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir /usr/local/bin
 
+COPY --chmod=755 Scripts/team /usr/local/bin/team
+
 # Switch back to the standard user for default execution
 USER ubuntu
 ENV HOME=/home/ubuntu
 
-RUN mkdir -p /home/ubuntu/.gemini/antigravity-cli
+RUN mkdir -p /home/ubuntu/.gemini/antigravity-cli/conversations && \
+    ln -sf /home/ubuntu/.gemini/antigravity-cli/conversations/conversation_summaries.db \
+    /home/ubuntu/.gemini/antigravity-cli/conversation_summaries.db
 COPY --chown=ubuntu:ubuntu Config/antigravity-cli/settings.json /home/ubuntu/.gemini/antigravity-cli/settings.json
 
 CMD ["sleep", "infinity"]
