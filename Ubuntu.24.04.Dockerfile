@@ -5,7 +5,7 @@ SHELL ["/bin/bash", "-c"]
 ARG TARGETARCH
 ARG WASMTIME_VERSION="v44.0.1"
 ARG SWIFT_WASM_TRIPLE='wasm32-unknown-wasip1-threads'
-ARG SWIFT_RELEASE='6.3.3'
+ARG SWIFT_RELEASE='6.4.0'
 ARG SWIFT_NIGHTLY=
 ARG UBUNTU_VERSION='ubuntu24.04'
 
@@ -187,7 +187,8 @@ USER ubuntu
 ENV HOME=/home/ubuntu
 
 RUN mkdir -p /home/ubuntu/.gemini/antigravity-cli/conversations && \
-    ln -sf /home/ubuntu/.gemini/antigravity-cli/conversations/conversation_summaries.db /home/ubuntu/.gemini/antigravity-cli/conversation_summaries.db
+    ln -sf /home/ubuntu/.gemini/antigravity-cli/conversations/conversation_summaries.db \
+    /home/ubuntu/.gemini/antigravity-cli/conversation_summaries.db
 COPY --chown=ubuntu:ubuntu Config/antigravity-cli/settings.json /home/ubuntu/.gemini/antigravity-cli/settings.json
 
 CMD ["sleep", "infinity"]
