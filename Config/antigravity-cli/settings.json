@@ -1,4 +1,5 @@
 {
+    "agentMode": "accept-edits",
     "allowNonWorkspaceAccess": true,
     "permissions": {
         "allow": [
