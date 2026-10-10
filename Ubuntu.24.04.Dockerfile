@@ -129,15 +129,19 @@ https://deb.nodesource.com/node_24.x nodistro main" > /etc/apt/sources.list.d/no
 apt update
 apt -y install \
     binaryen \
+    fonts-liberation \
     gh \
     git-filter-repo \
+    glslang-tools \
     jq \
     imagemagick \
+    libgl1-mesa-dri \
     libjemalloc2 \
     libjemalloc-dev \
     liblz4-dev \
     libsqlite3-dev \
     libssl-dev \
+    mesa-vulkan-drivers \
     nodejs \
     passwd \
     pip \
@@ -146,6 +150,13 @@ apt -y install \
     wget \
     xxd \
     zip
+
+# Google Chrome Stable (available natively for amd64 and arm64)
+DEB_ARCH="${TARGETARCH:-$(dpkg --print-architecture)}"
+curl -fsSL "https://dl.google.com/linux/direct/google-chrome-stable_current_${DEB_ARCH}.deb" \
+    -o chrome.deb
+apt -y install ./chrome.deb
+rm -f chrome.deb
 
 # AWS uses 'aarch64' and 'x86_64'
 curl "https://awscli.amazonaws.com/awscli-exe-linux-${ARCHITECTURE}.zip" \
@@ -167,6 +178,7 @@ rm -rf /var/lib/apt/lists/*
 # verify installations
 echo "NodeJS: $(node --version)"
 echo "AWS CLI: $(aws --version)"
+echo "Google Chrome: $(google-chrome --version)"
 swift --version
 swift sdk list --swift-sdks-path "$SWIFT_WASM_SDK_PATH"
 
