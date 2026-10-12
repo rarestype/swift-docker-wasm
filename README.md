@@ -6,7 +6,7 @@ This setup allows you to host a runner on a macOS machine (e.g., Mac Mini) using
 
 ## Architecture
 
-1. **Runner Image**: The `Runner.Dockerfile` builds an image (`tayloraswift/swiftwasm:runner`) containing:
+1. **Runner Image**: The `runner` stage of `Ubuntu.24.04.Dockerfile` builds an image (`tayloraswift/swiftwasm:runner`) containing:
 * Ubuntu 24.04
 * Swift Toolchain & WASM SDK
 * GitHub Actions Runner Agent
@@ -128,13 +128,19 @@ chmod +x ~/start_ci_system.sh
 
 ## Maintenance
 
+### Image stages
+
+`Ubuntu.24.04.Dockerfile` has three stages. The `base` stage contains the Swift toolchain, the WebAssembly SDK and general development tools. The `runner` stage adds the GitHub Actions runner on top of it, and is published as `tayloraswift/swiftwasm:runner`. The final `workstation` stage instead adds AI harnesses (Claude Code, Qwen Code and the Antigravity CLI), and is published as `tayloraswift/swiftwasm:master`, the image agents and humans work in. Tools that CI needs belong in `base`; tools only interactive users need belong in `workstation`.
+
+The harnesses don’t update themselves; they update when the image is rebuilt. To pin one, pass `--build-arg CLAUDE_CODE_VERSION=…` or `--build-arg QWEN_CODE_VERSION=…`. Claude Code settings that everyone should share go in `Config/claude-code/managed-settings.json`, which is installed outside the home directory so that it reaches existing containers when they’re updated.
+
 ### Updating the Toolchain
 
 To update the Swift version or SDK:
 
-1. Edit `Ubuntu.Latest.Dockerfile` (or relevant dockerfile) in this repository.
+1. Edit `Ubuntu.24.04.Dockerfile` in this repository (`Ubuntu.Latest.Dockerfile` is a symlink to it).
 2. Push to `master`.
-3. The `Deploy.yml` workflow will automatically rebuild `tayloraswift/swiftwasm:runner`.
+3. The `Deploy.yml` workflow will automatically rebuild `tayloraswift/swiftwasm:master` and `tayloraswift/swiftwasm:runner`.
 4. The active runner on the Mac Mini will detect the new image on its next loop iteration, pull it, and start using it immediately.
 
 

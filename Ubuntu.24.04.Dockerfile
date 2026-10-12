@@ -1,4 +1,8 @@
-FROM ubuntu:24.04
+# This file has three stages. `base` has the toolchain and development tools.
+# `runner` adds the GitHub Actions runner, and is published as `:runner`. The
+# final stage, `workstation`, adds AI harnesses instead, and is published as
+# `:master`; it is the image agents and humans work in.
+FROM ubuntu:24.04 AS base
 ENV DEBIAN_FRONTEND=noninteractive
 SHELL ["/bin/bash", "-c"]
 
@@ -142,10 +146,13 @@ apt -y install \
     libsqlite3-dev \
     libssl-dev \
     mesa-vulkan-drivers \
+    nano \
     nodejs \
     passwd \
     pip \
+    ripgrep \
     sudo \
+    tmux \
     wabt \
     wget \
     xxd \
@@ -188,19 +195,87 @@ WORKDIR /home/ubuntu
 
 RUN passwd -d ubuntu
 RUN usermod -aG sudo ubuntu
+# agents can’t answer a password prompt, even an empty one
+RUN echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' \
+    > /etc/sudoers.d/ubuntu && chmod 440 /etc/sudoers.d/ubuntu
+
+# Switch back to the standard user for default execution
+USER ubuntu
+ENV HOME=/home/ubuntu
+
+CMD ["sleep", "infinity"]
+
+
+FROM base AS runner
+
+USER root
+
+# Install GitHub Actions Runner dependencies
+RUN apt update && apt install -y \
+    curl \
+    jq \
+    libicu-dev \
+    libdigest-sha-perl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Switch back to the non-root user 'ubuntu' (created in the base stage)
+USER ubuntu
+WORKDIR /home/ubuntu
+
+# https://github.com/actions/runner/releases
+ARG RUNNER_VERSION="2.333.1"
+# bring in the architecture argument (automatically set by Docker)
+ARG TARGETARCH
+
+RUN mkdir actions-runner && cd actions-runner \
+    && if [ "$TARGETARCH" = "amd64" ]; then GH_ARCH="x64"; \
+       elif [ "$TARGETARCH" = "arm64" ]; then GH_ARCH="arm64"; \
+       else echo "Unsupported architecture: $TARGETARCH"; exit 1; fi \
+    && echo "Downloading Runner for $GH_ARCH..." \
+    && curl -o actions-runner.tar.gz -L "https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-linux-${GH_ARCH}-${RUNNER_VERSION}.tar.gz" \
+    && tar xzf ./actions-runner.tar.gz \
+    && rm actions-runner.tar.gz
+
+COPY --chown=ubuntu:ubuntu Scripts/runner-entrypoint.sh /home/ubuntu/actions-runner/entrypoint.sh
+RUN chmod +x /home/ubuntu/actions-runner/entrypoint.sh
+
+WORKDIR /home/ubuntu/actions-runner
+ENTRYPOINT ["./entrypoint.sh"]
+
+
+FROM base AS workstation
+
+USER root
+
+# Harnesses are installed system-wide and only change when the image is rebuilt,
+# so everyone runs the same versions. Pin a version by overriding these.
+ARG CLAUDE_CODE_VERSION=latest
+ARG QWEN_CODE_VERSION=latest
+ENV DISABLE_AUTOUPDATER=1
+
+# Claude Code’s postinstall links its native binary. Qwen Code’s audio capture
+# helper is left disabled, since containers have no microphone.
+RUN npm install -g --allow-scripts=@anthropic-ai/claude-code \
+        "@anthropic-ai/claude-code@${CLAUDE_CODE_VERSION}" \
+        "@qwen-code/qwen-code@${QWEN_CODE_VERSION}" \
+    && npm cache clean --force \
+    && claude --version \
+    && qwen --version
 
 # Install Antigravity CLI system-wide
 RUN curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir /usr/local/bin
 
 COPY --chmod=755 Scripts/team /usr/local/bin/team
 
-# Switch back to the standard user for default execution
+# Managed settings live outside the home directory, so they reach existing home
+# volumes when the image is updated, and take precedence over user settings.
+COPY Config/claude-code/managed-settings.json /etc/claude-code/managed-settings.json
+
 USER ubuntu
-ENV HOME=/home/ubuntu
 
 RUN mkdir -p /home/ubuntu/.gemini/antigravity-cli/conversations && \
     ln -sf /home/ubuntu/.gemini/antigravity-cli/conversations/conversation_summaries.db \
     /home/ubuntu/.gemini/antigravity-cli/conversation_summaries.db
-COPY --chown=ubuntu:ubuntu Config/antigravity-cli/settings.json /home/ubuntu/.gemini/antigravity-cli/settings.json
-
-CMD ["sleep", "infinity"]
+COPY --chown=ubuntu:ubuntu \
+    Config/antigravity-cli/settings.json \
+    /home/ubuntu/.gemini/antigravity-cli/settings.json
