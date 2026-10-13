@@ -183,7 +183,7 @@ unzip awscliv2.zip
 ./aws/install
 
 # clean up cached files
-rm -rf aws awscliv2.zip awscliv2.zip.sig aws-public.key
+rm -rf aws awscliv2.zip awscliv2.zip.sig aws.public.key
 rm -rf /var/lib/apt/lists/*
 
 # verify installations
