@@ -4,6 +4,10 @@
 # `:master`; it is the image agents and humans work in.
 FROM ubuntu:24.04 AS base
 ENV DEBIAN_FRONTEND=noninteractive
+# Without a UTF-8 locale, `docker exec` sessions fall back to ASCII, which
+# garbles tmux and terminal UIs. C.UTF-8 is built in, so no locales package is
+# needed.
+ENV LANG=C.UTF-8
 SHELL ["/bin/bash", "-c"]
 
 ARG TARGETARCH
@@ -195,6 +199,8 @@ WORKDIR /home/ubuntu
 
 RUN passwd -d ubuntu
 RUN usermod -aG sudo ubuntu
+COPY Config/tmux/tmux.conf /etc/tmux.conf
+
 # agents can’t answer a password prompt, even an empty one
 RUN echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' \
     > /etc/sudoers.d/ubuntu && chmod 440 /etc/sudoers.d/ubuntu
