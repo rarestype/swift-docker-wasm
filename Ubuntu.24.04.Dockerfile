@@ -246,6 +246,9 @@ ENTRYPOINT ["./entrypoint.sh"]
 FROM base AS workstation
 
 USER root
+# `base` sets HOME for the ubuntu user, which root would otherwise inherit, and
+# then leave root-owned caches in /home/ubuntu
+ENV HOME=/root
 
 # Harnesses are installed system-wide and only change when the image is rebuilt,
 # so everyone runs the same versions. Pin a version by overriding these.
@@ -272,6 +275,7 @@ COPY --chmod=755 Scripts/team /usr/local/bin/team
 COPY Config/claude-code/managed-settings.json /etc/claude-code/managed-settings.json
 
 USER ubuntu
+ENV HOME=/home/ubuntu
 
 RUN mkdir -p /home/ubuntu/.gemini/antigravity-cli/conversations && \
     ln -sf /home/ubuntu/.gemini/antigravity-cli/conversations/conversation_summaries.db \
