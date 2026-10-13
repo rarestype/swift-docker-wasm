@@ -8,6 +8,13 @@ on:
         tags:
             -   '[0-9]+.[0-9]+.[0-9]+'
 
+#   Two merges in quick succession start two runs that push the same tags, and
+#   whichever finishes last wins, even if it built an older commit. Queue them
+#   instead, so the newest commit always pushes last.
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: false
+
 jobs:
     build:
         strategy:
