@@ -272,7 +272,17 @@ RUN npm install -g --allow-scripts=@anthropic-ai/claude-code \
     && qwen --version
 
 # Install Antigravity CLI system-wide
-RUN curl -fsSL https://antigravity.google/cli/install.sh | bash -s -- --dir /usr/local/bin
+# The download occasionally returns binary garbage instead of the script, so
+# check that it looks like a script and retry before running it.
+RUN for attempt in 1 2 3 4 5; do \
+        curl -fsSL https://antigravity.google/cli/install.sh -o /tmp/antigravity-install.sh \
+        && [ "$(head -c 2 /tmp/antigravity-install.sh)" = '#!' ] \
+        && break; \
+        echo "Antigravity installer download $attempt looked wrong, retrying..."; \
+        sleep 10; \
+    done \
+    && bash /tmp/antigravity-install.sh --dir /usr/local/bin \
+    && rm /tmp/antigravity-install.sh
 
 COPY --chmod=755 Scripts/team /usr/local/bin/team
 
