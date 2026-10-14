@@ -200,6 +200,8 @@ WORKDIR /home/ubuntu
 RUN passwd -d ubuntu
 RUN usermod -aG sudo ubuntu
 COPY Config/tmux/tmux.conf /etc/tmux.conf
+COPY Config/sourcekit-lsp/config.json /etc/skel/.sourcekit-lsp/config.json
+COPY Config/sourcekit-lsp/config.json /root/.sourcekit-lsp/config.json
 
 # agents can’t answer a password prompt, even an empty one
 RUN echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' \
@@ -208,6 +210,10 @@ RUN echo 'ubuntu ALL=(ALL) NOPASSWD:ALL' \
 # Switch back to the standard user for default execution
 USER ubuntu
 ENV HOME=/home/ubuntu
+
+COPY --chown=ubuntu:ubuntu \
+    Config/sourcekit-lsp/config.json \
+    /home/ubuntu/.sourcekit-lsp/config.json
 
 CMD ["sleep", "infinity"]
 
