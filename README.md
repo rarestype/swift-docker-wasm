@@ -59,10 +59,15 @@ IMAGE_NAME="tayloraswift/swiftwasm:runner"
 #    A unique name to identify this runner in GitHub Settings.
 CONTAINER_NAME="runner-${GITHUB_REPO}"
 
-# 5. Directory for script storage
+# 5. Runner Labels (optional)
+#    Workflows pick a runner by its labels. Give a machine its own label if
+#    its jobs must not land on other runners, or theirs on it.
+RUNNER_LABELS="self-hosted,ubuntu-24.04,swift-wasm"
+
+# 6. Directory for script storage
 INSTALL_DIR="$HOME/swift-runner"
 
-# 6. Remote Script URL
+# 7. Remote Script URL
 #    The logic that runs inside the loop.
 REPO_SCRIPT_URL="https://raw.githubusercontent.com/tayloraswift/swift-docker-wasm/master/Scripts/runner-start.sh"
 
@@ -94,6 +99,7 @@ export GITHUB_OWNER="$GITHUB_OWNER"
 export GITHUB_REPO="$GITHUB_REPO"
 export IMAGE_NAME="$IMAGE_NAME"
 export CONTAINER_NAME="$CONTAINER_NAME"
+export RUNNER_LABELS="$RUNNER_LABELS"
 # Pass the runner name to the container so it shows up correctly in GitHub UI
 export RUNNER_NAME="${CONTAINER_NAME}-$(hostname)"
 
