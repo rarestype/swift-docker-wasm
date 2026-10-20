@@ -186,10 +186,17 @@ unzip awscliv2.zip
 rm -rf aws awscliv2.zip awscliv2.zip.sig aws.public.key
 rm -rf /var/lib/apt/lists/*
 
+# trust GitHub’s SSH host keys system-wide, so that CI can clone private
+# dependencies over SSH. the keys come from GitHub’s API over HTTPS, so every
+# image build picks up a rotation
+curl -fsSL https://api.github.com/meta \
+    | jq -r '.ssh_keys[] | "github.com " + .' > /etc/ssh/ssh_known_hosts
+
 # verify installations
 echo "NodeJS: $(node --version)"
 echo "AWS CLI: $(aws --version)"
 echo "Google Chrome: $(google-chrome --version)"
+ssh-keygen -F github.com -f /etc/ssh/ssh_known_hosts
 swift --version
 swift sdk list --swift-sdks-path "$SWIFT_WASM_SDK_PATH"
 
