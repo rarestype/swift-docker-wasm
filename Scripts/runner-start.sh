@@ -45,6 +45,7 @@ while true; do
         -e GITHUB_PAT="$GH_RUNNER_PAT" \
         -e GITHUB_OWNER="$GITHUB_OWNER" \
         -e RUNNER_NAME="${RUNNER_NAME:-runner-$(date +%s)}" \
+        -e RUNNER_LABELS \
         $IMAGE_NAME
 
     echo "Runner exited. Restarting in 5 seconds..."

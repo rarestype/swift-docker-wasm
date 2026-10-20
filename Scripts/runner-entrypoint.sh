@@ -6,6 +6,8 @@ set -e
 # - GITHUB_OWNER: The repository owner (e.g., tayloraswift)
 # - GITHUB_REPO: The repository name (e.g., swift-docker-wasm)
 # - RUNNER_NAME: (Optional) Name of the runner
+# - RUNNER_LABELS: (Optional) Comma-separated runner labels, defaulting to
+#   self-hosted,ubuntu-24.04,swift-wasm
 
 if [ -z "$GITHUB_PAT" ]; then
     echo "Error: GITHUB_PAT is not set."
@@ -35,7 +37,7 @@ fi
     --unattended \
     --replace \
     --name "${RUNNER_NAME:-$(hostname)}" \
-    --labels "self-hosted,ubuntu-24.04,swift-wasm"
+    --labels "${RUNNER_LABELS:-self-hosted,ubuntu-24.04,swift-wasm}"
 
 # 3. Run the runner
 echo "Starting runner..."
