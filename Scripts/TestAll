@@ -4,6 +4,16 @@ set -euo pipefail
 dockerfile='Ubuntu.24.04.Dockerfile'
 script='swift build --swift-sdk "$SWIFT_WASM_SDK" --swift-sdks-path "$SWIFT_WASM_SDK_PATH"'
 
+# Building one product that uses a macro must not compile swift-syntax, because
+# the image’s SwiftPM uses prebuilts for that too.
+macros='set -euo pipefail
+swift build --product Probe --swift-sdk "$SWIFT_WASM_SDK" --swift-sdks-path "$SWIFT_WASM_SDK_PATH"
+if find .build -name SwiftSyntax.swiftmodule -not -path "*/prebuilts/*" -not -path "*/checkouts/*" | grep -q .; then
+    echo "💔 Error: swift-syntax was compiled from source" >&2
+    exit 1
+fi
+echo "💖 swift-syntax came prebuilt"'
+
 docker build . -f $dockerfile -t swiftwasm:__test
 docker run --rm \
     -u ubuntu \
@@ -11,3 +21,9 @@ docker run --rm \
     -w=/home/ubuntu/swift \
     swiftwasm:__test \
     /bin/bash -c "$script"
+docker run --rm \
+    -u ubuntu \
+    -v=$PWD/Tests/Macros:/home/ubuntu/swift \
+    -w=/home/ubuntu/swift \
+    swiftwasm:__test \
+    /bin/bash -c "$macros"

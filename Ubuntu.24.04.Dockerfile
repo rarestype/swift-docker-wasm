@@ -16,6 +16,12 @@ ARG SWIFT_WASM_TRIPLE='wasm32-unknown-wasip1-threads'
 ARG SWIFT_RELEASE='6.4.1'
 ARG SWIFT_NIGHTLY=
 ARG UBUNTU_VERSION='ubuntu24.04'
+# SwiftPM from rarestype/swift-package-manager-ss-prebuilts, which uses prebuilt
+# swift-syntax for single-product builds (`--product`, `swift package js`). It
+# must be built for SWIFT_RELEASE; leave it empty to keep the toolchain’s own.
+ARG SWIFTPM_RELEASE='swift-6.4.1-RELEASE-17467a593'
+ARG SWIFTPM_SHA256_X86_64='c348a933e80b04c5395ec1725484bdffb77769c5b01a37564bcad8b0089e7ecb'
+ARG SWIFTPM_SHA256_AARCH64='426921c7829b92141134412221b9fc945de484bfadde66633971ce0973dd793e'
 
 
 # these variables exported to the container
@@ -127,6 +133,31 @@ tar --strip-components=1 -xf toolchain.tar.gz -C "$SWIFT_INSTALLATION_DIRECTORY"
 rm toolchain.tar.gz
 rm toolchain.tar.gz.sig
 rm swift.public.key
+
+# Replace the toolchain’s SwiftPM, including the Swift Build resources it reads
+# from share/pm. The archive installs over the toolchain’s `usr`.
+if [[ -v SWIFT_NIGHTLY && -n "$SWIFT_NIGHTLY" || -z "$SWIFTPM_RELEASE" ]]; then
+    echo "Keeping the toolchain’s own SwiftPM"
+elif [[ "$SWIFTPM_RELEASE" != "swift-${SWIFT_VERSION}-"* ]]; then
+    echo "SwiftPM release ${SWIFTPM_RELEASE} was not built for Swift ${SWIFT_VERSION}" >&2
+    exit 1
+else
+    if [[ "$ARCHITECTURE" == "aarch64" ]]; then
+        SWIFTPM_SHA256="$SWIFTPM_SHA256_AARCH64"
+    else
+        SWIFTPM_SHA256="$SWIFTPM_SHA256_X86_64"
+    fi
+    SWIFTPM_URL="https://github.com/rarestype/swift-package-manager-ss-prebuilts/releases/download/\
+${SWIFTPM_RELEASE}/swift-package-manager-${SWIFT_VERSION}-linux-${ARCHITECTURE}.tar.gz"
+
+    echo "Downloading SwiftPM from: ${SWIFTPM_URL}"
+    curl -fsSL "$SWIFTPM_URL" -o swiftpm.tar.gz
+    echo "${SWIFTPM_SHA256}  swiftpm.tar.gz" | sha256sum -c -
+    rm -rf "$SWIFT_INSTALLATION"/share/pm/*.bundle
+    tar -xzf swiftpm.tar.gz -C "$SWIFT_INSTALLATION_DIRECTORY"
+    rm swiftpm.tar.gz
+fi
+swift build --version
 
 swift sdk install swift-wasm.artifactbundle.zip --swift-sdks-path "$SWIFT_WASM_SDK_PATH"
 

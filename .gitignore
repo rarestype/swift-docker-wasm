@@ -2,3 +2,5 @@
 
 /Bundles
 /Tests/.build
+/Tests/Macros/.build
+/Tests/Macros/Package.resolved
