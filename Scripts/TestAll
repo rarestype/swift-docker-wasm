@@ -14,6 +14,21 @@ if find .build -name SwiftSyntax.swiftmodule -not -path "*/prebuilts/*" -not -pa
 fi
 echo "💖 swift-syntax came prebuilt"'
 
+# Every fix the image’s compiler carries has a reproducer in rarestype/swift,
+# which prints `ok` when it is built with the fix.
+overlay=$(sed -n "s/^ARG SWIFT_OVERLAY_RELEASE='\(.*\)'$/\1/p" $dockerfile)
+reproducers='set -euo pipefail
+for source in Reproducers/*.swift; do
+    name="$(basename "$source" .swift)"
+    swiftc -O -parse-as-library "$source" -o "/tmp/$name"
+    output="$("/tmp/$name")"
+    if [[ "$output" != ok ]]; then
+        echo "💔 Error: ${name}: ${output}" >&2
+        exit 1
+    fi
+    echo "💖 ${name}"
+done'
+
 docker build . -f $dockerfile -t swiftwasm:__test
 docker run --rm \
     -u ubuntu \
@@ -27,3 +42,15 @@ docker run --rm \
     -w=/home/ubuntu/swift \
     swiftwasm:__test \
     /bin/bash -c "$macros"
+
+if [[ -n "$overlay" ]]; then
+    rm -rf .overlay
+    git -c advice.detachedHead=false clone -q --depth 1 --branch "$overlay" https://github.com/rarestype/swift .overlay
+    docker run --rm \
+        -u ubuntu \
+        -v=$PWD/.overlay/Tests:/home/ubuntu/swift:ro \
+        -w=/home/ubuntu/swift \
+        swiftwasm:__test \
+        /bin/bash -c "$reproducers"
+    rm -rf .overlay
+fi

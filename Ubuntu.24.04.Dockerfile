@@ -22,6 +22,12 @@ ARG UBUNTU_VERSION='ubuntu24.04'
 ARG SWIFTPM_RELEASE='swift-6.4.1-RELEASE-17467a593'
 ARG SWIFTPM_SHA256_X86_64='c348a933e80b04c5395ec1725484bdffb77769c5b01a37564bcad8b0089e7ecb'
 ARG SWIFTPM_SHA256_AARCH64='426921c7829b92141134412221b9fc945de484bfadde66633971ce0973dd793e'
+# The compiler and standard library from rarestype/swift, which are Apple’s
+# release plus upstream fixes. It must be built for SWIFT_RELEASE; leave it
+# empty to keep the toolchain’s own.
+ARG SWIFT_OVERLAY_RELEASE='swift-6.4.1-RELEASE-81bd22795'
+ARG SWIFT_OVERLAY_SHA256_X86_64='f5f37179a8043c9e4451a7a4b867226e8356b7348eff976239ba5d08aeb8717b'
+ARG SWIFT_OVERLAY_SHA256_AARCH64='2ee97a73978013f72759b1256bec9d85472a378c9cd835203179a21ee13887e5'
 
 
 # these variables exported to the container
@@ -158,6 +164,30 @@ ${SWIFTPM_RELEASE}/swift-package-manager-${SWIFT_VERSION}-linux-${ARCHITECTURE}.
     rm swiftpm.tar.gz
 fi
 swift build --version
+
+# Replace the toolchain’s compiler and standard library. The archive installs
+# over the toolchain’s `usr`, and touches nothing that the SwiftPM archive does.
+if [[ -v SWIFT_NIGHTLY && -n "$SWIFT_NIGHTLY" || -z "$SWIFT_OVERLAY_RELEASE" ]]; then
+    echo "Keeping the toolchain’s own compiler and standard library"
+elif [[ "$SWIFT_OVERLAY_RELEASE" != "swift-${SWIFT_VERSION}-"* ]]; then
+    echo "Swift release ${SWIFT_OVERLAY_RELEASE} was not built for Swift ${SWIFT_VERSION}" >&2
+    exit 1
+else
+    if [[ "$ARCHITECTURE" == "aarch64" ]]; then
+        SWIFT_OVERLAY_SHA256="$SWIFT_OVERLAY_SHA256_AARCH64"
+    else
+        SWIFT_OVERLAY_SHA256="$SWIFT_OVERLAY_SHA256_X86_64"
+    fi
+    SWIFT_OVERLAY_URL="https://github.com/rarestype/swift/releases/download/\
+${SWIFT_OVERLAY_RELEASE}/swift-${SWIFT_VERSION}-linux-${ARCHITECTURE}.tar.gz"
+
+    echo "Downloading the Swift compiler and standard library from: ${SWIFT_OVERLAY_URL}"
+    curl -fsSL "$SWIFT_OVERLAY_URL" -o swift-overlay.tar.gz
+    echo "${SWIFT_OVERLAY_SHA256}  swift-overlay.tar.gz" | sha256sum -c -
+    tar -xzf swift-overlay.tar.gz -C "$SWIFT_INSTALLATION_DIRECTORY"
+    rm swift-overlay.tar.gz
+    cat "$SWIFT_INSTALLATION/share/swift/rarest-overlay.txt"
+fi
 
 swift sdk install swift-wasm.artifactbundle.zip --swift-sdks-path "$SWIFT_WASM_SDK_PATH"
 
