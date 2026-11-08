@@ -275,7 +275,9 @@ USER ubuntu
 WORKDIR /home/ubuntu
 
 # https://github.com/actions/runner/releases
-ARG RUNNER_VERSION="2.333.1"
+# GitHub tells an older runner to update itself before every job, and that
+# download can fail; keep this at the latest release.
+ARG RUNNER_VERSION="2.338.2"
 # bring in the architecture argument (automatically set by Docker)
 ARG TARGETARCH
 

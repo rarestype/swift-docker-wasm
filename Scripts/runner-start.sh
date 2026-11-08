@@ -35,7 +35,15 @@ while true; do
     # Prune dangling images to prevent disk from filling up
     docker image prune -f
 
-    echo "Launching runner..."
+    # A container left behind by a force-quit terminal still holds the name
+    docker rm -f "$CONTAINER_NAME" > /dev/null 2>&1 || true
+
+    # GitHub refuses a runner whose name still has a session open, and a
+    # container that died can leave its session behind, so every container
+    # registers under a new name
+    RUNNER_ID="${RUNNER_NAME:-runner}-$(date +%s)"
+
+    echo "Launching runner $RUNNER_ID..."
     # disable IPv6, to prevent long timeouts in buildings that lack IPv6 access
     # if your runners have IPv6 access, remove the `sysctl` lines
     docker run --rm \
@@ -44,7 +52,7 @@ while true; do
         --name "$CONTAINER_NAME" \
         -e GITHUB_PAT="$GH_RUNNER_PAT" \
         -e GITHUB_OWNER="$GITHUB_OWNER" \
-        -e RUNNER_NAME="${RUNNER_NAME:-runner-$(date +%s)}" \
+        -e RUNNER_NAME="$RUNNER_ID" \
         -e RUNNER_LABELS \
         $IMAGE_NAME
 
