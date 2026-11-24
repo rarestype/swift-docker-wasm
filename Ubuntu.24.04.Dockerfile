@@ -13,16 +13,16 @@ SHELL ["/bin/bash", "-c"]
 ARG TARGETARCH
 ARG WASMTIME_VERSION="v44.0.1"
 ARG SWIFT_WASM_TRIPLE='wasm32-unknown-wasip1-threads'
-ARG SWIFT_RELEASE='6.4.2'
+ARG SWIFT_RELEASE='6.4.3'
 ARG SWIFT_NIGHTLY=
 ARG UBUNTU_VERSION='ubuntu24.04'
 # The compiler, standard library and SwiftPM from rarestype/swift, which are
 # Apple’s release plus upstream fixes. Its SwiftPM uses prebuilt swift-syntax
 # for single-product builds (`--product`, `swift package js`). It must be built
 # for SWIFT_RELEASE; leave it empty to keep the toolchain’s own.
-ARG SWIFT_OVERLAY_RELEASE='swift-6.4.2-RELEASE-9b4f7d354'
-ARG SWIFT_OVERLAY_SHA256_X86_64='bfc38ea913fb03a429161f9d8c93dd614e104d11ea235a71c0af2c588807bf30'
-ARG SWIFT_OVERLAY_SHA256_AARCH64='8c538bc8be7d5886a4ab1983c2382f7f796c73e84c6af449858c0c9c4c6afb24'
+ARG SWIFT_OVERLAY_RELEASE='swift-6.4.3-RELEASE-8dfc47a85'
+ARG SWIFT_OVERLAY_SHA256_X86_64='b5773e85dbad740e2c810af4ba67ff0ce13b804487f3434f0c60bb14331af9ed'
+ARG SWIFT_OVERLAY_SHA256_AARCH64='f2a3bd1f24dd057ab108c02ff8972a03b694c5f55dbf95243198d37d6ff8dc43'
 
 
 # these variables exported to the container
